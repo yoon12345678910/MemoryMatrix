@@ -1,4 +1,4 @@
-export const gameLevel = [
+export const gameRoundData = [
   {
     level: 1,
     nTile: 5,

@@ -7,14 +7,14 @@
     <div class="container">
       <div class="info">
         <div>
-          LEVEL<span>{{level}}</span>
+          LEVEL<span>{{ level + 1 }}</span>
         </div>
         <div>
-          TILES<span>{{correctTileCount}}</span>
+          TILES<span>{{ correctTileCount }}</span>
         </div>
       </div>
       <div class="boxWrapper">
-        <div class="tileBox" :style="{width: calcBoxSize}" >
+        <div class="tileBox" :style="{width: calcBoxSize, height: calcBoxSize}" >
           <div :key="tile.id"
             v-for="(tile, index) in tiles"
             v-on:click="checkTile(index)" 
@@ -37,77 +37,77 @@
 </template>
 
 <script>
-import { gameLevel } from './gameLevel';
+import { gameRoundData } from './gameRoundData';
 import { DB } from './DB';
 export default {
   name: 'app',
   data() {
     return({
+      tiles: [],
       life: 5,
       level: 0,
-      nTile: 0, // actual tiles => n * n
-      tiles: [],
       correctTileCount: 0,
       yourRightAnswerCount: 0,
       remainingClickCount: 0,
-      correctScreenTime: 0,
-      didPass: false,
-      levelIncPoint: 0
+      levelIncPoint: 0,
+      didPass: false
     });
   },
   created() {
     const loaded = DB.load();
-    const level = loaded === null ? 1 : loaded.level;
-    this.adjustLevel().set(level);
+    this.level = loaded === null ? 0 : loaded.level;
   },
   mounted() {
     this.startRound();
   },
   computed: {
     calcBoxSize: function () {
-      return `${44 * this.nTile}px`; // 44 = tile width ( width + margin 2 * 2 )
+      const { nTile } = gameRoundData[this.level];
+      return `${44 * nTile}px`; // 44 = tile width ( width + margin 2 * 2 )
     }
   },
   methods: {
     async startRound() {
-      this.tiles = this.generateTiles();
+      const {
+        nTile,
+        correctTileCount, 
+        correctScreenTime
+      } = gameRoundData[this.level];
+
+      this.tiles = this.generateTiles(nTile, correctTileCount);
       this.didPass = false;
       this.remainingClickCount = 0;
       this.yourRightAnswerCount = 0;
+      this.correctTileCount = correctTileCount;
 
-      this.asyncShowCorrectScreen()
-        .then(() => {
-          this.remainingClickCount = this.correctTileCount;
-        });
+      await this.asyncShowTileScreen(this.tiles, (tile => {
+        return tile.isCorrect;
+      }), correctScreenTime);
+      this.remainingClickCount = correctTileCount;
     },
     async evaluateRound() {
-      this.asyncShowResultScreen()
-        .then(() => {
-          return this.delay(500)
-            .then(() => {
-              if (this.yourRightAnswerCount === this.correctTileCount) {
-                this.adjustLevel().up();
-              } else {
-                this.adjustLevel().down();
-                this.life --;
-              }
+      await this.asyncShowTileScreen(this.tiles, (tile => {
+        return tile.isCorrect || tile.isSelected;
+      }), 1500);
+      await this.delay(500);
+      if (this.didPass) {
+        this.level = this.adjustLevel().up();
+      } else {
+        this.level = this.adjustLevel().down();
+        this.life --;
+      }
 
-              DB.save({ level: this.level });
+      DB.save({ level: this.level });
 
-              if (this.life === 0) {
-                alert('game over');
-              } else {
-                this.startRound();
-              }
-            });
-        });
+      if (this.life === 0) {
+        alert('game over');
+      } else {  
+        this.startRound();
+      }
     },
-    generateTiles() {
+    generateTiles(nTile, correctTileCount) {
       const tiles = [];
-      const randomTileIndex = () =>  Math.floor(Math.random() * tiles.length);
-      let correctTileCount = this.correctTileCount;
-
-      for (let i = 0; i < Math.pow(this.nTile, 2); i++) {
+      for (let i = 0; i < Math.pow(nTile, 2); i++) {
         tiles.push({
           index: i,
           isCorrect: false,
@@ -115,53 +115,61 @@ export default {
           isLastClick: false
         });
       }
-
       while(correctTileCount > 0) {
-        const tile = tiles[randomTileIndex()];
+        const tile = tiles[Math.floor(Math.random() * tiles.length)];
         if (!tile.isCorrect) {
           tile.isCorrect = true;
           correctTileCount --;
         }
       }
-
       return tiles;
+    },
+    checkTile(index) {
+      const tile = this.tiles[index];
+      if (tile.isSelected || this.remainingClickCount === 0) return;
+
+      tile.isSelected = true;
+      this.remainingClickCount --;
+      if (tile.isCorrect) {
+        this.yourRightAnswerCount ++;
+      }
+      if (this.remainingClickCount === 0) {
+        const { correctTileCount } = gameRoundData[this.level];
+        tile.isLastClick = true;
+        this.didPass = this.yourRightAnswerCount === correctTileCount;
+        this.evaluateRound();
+      }
+    },
+    adjustLevel() {
+      return {
+        up: () => {
+          if (this.levelIncPoint < 2) this.levelIncPoint ++;
+          return this.level + (this.levelIncPoint === 2 ? 2 : 1);
+        },
+        down: () => {
+          if (this.levelIncPoint > -1) this.levelIncPoint --;
+          const level = this.level + (this.levelIncPoint === -1 ? -1 : 0);
+          return level < 0 ? 0 : level;
+        }
+      }
     },
     delay(t, v) {
       return new Promise(function(resolve) { 
         setTimeout(resolve.bind(null, v), t)
       });
     },
-    asyncShowCorrectScreen() {
-      const tiles = this.tiles;
+    asyncShowTileScreen(tiles, whichTile, timeTohidden) {
       return this.delay(500)
         .then(() => { // show
           this.tiles = tiles.map(tile => {
             return {
               ...tile,
-              isSelected: tile.isCorrect
+              isSelected: whichTile.call(null, tile)
             };
           });
         })
         .then(() => { // hide
-          return this.delay(this.correctScreenTime)
-          .then(() => {
-            this.tiles = tiles;
-          });
-        });
-    },
-    asyncShowResultScreen() {
-      const tiles = this.tiles;
-      return this.delay(500)
-        .then(() => { // show
-          this.tiles = tiles.map(tile => {
-            return {
-              ...tile,
-              isSelected: tile.isCorrect || tile.isSelected
-            };
-          });
-        })
-        .then(() => { // hide
-          return this.delay(1500)
+          return this.delay(timeTohidden)
           .then(() => {
             this.tiles = tiles.map(tile => {
               return {
@@ -172,50 +180,6 @@ export default {
           });
         });
     },
-    checkTile(index) {
-      const tile = this.tiles[index];
-      if (tile.isSelected || this.remainingClickCount === 0) return;
-      tile.isSelected = true;
-      this.remainingClickCount --;
-
-      if (tile.isCorrect) {
-        this.yourRightAnswerCount ++;
-      }
-      if (this.remainingClickCount === 0) {
-        tile.isLastClick = true;
-        this.didPass = this.yourRightAnswerCount === this.correctTileCount;
-        this.evaluateRound();
-      }
-    },
-    adjustLevel() {
-      return {
-        set: (levelIncPoint) => {
-          const index = this.level - 1 + levelIncPoint;
-          const {
-            level, 
-            nTile, 
-            correctTileCount, 
-            correctScreenTime 
-          } = gameLevel[index < 0 ? 0 : index];
-          this.level = level;
-          this.nTile = nTile;
-          this.correctTileCount = correctTileCount;
-          this.correctScreenTime = correctScreenTime;
-        },
-        up: () => {
-          if (this.levelIncPoint < 2) {
-            this.levelIncPoint ++;
-          }
-          this.adjustLevel().set(this.levelIncPoint === 2 ? 2 : 1);
-        },
-        down: () => {
-          if (this.levelIncPoint > -1) {
-            this.levelIncPoint --;
-          }
-          this.adjustLevel().set(this.levelIncPoint === -1 ? -1 : 0);
-        }
-      }
-    }
   }
 }
 </script>
@@ -273,10 +237,11 @@ export default {
 .tileBox {
   display: flex;
   flex-wrap: wrap;
+  overflow: hidden;
   margin-top: -10px;
   padding: 10px;
   background: #3a2a25;
-  transition: all .1s ease-out;
+  transition: all .2s ease-out;
 }
 .tile {
   display: flex;
@@ -284,7 +249,6 @@ export default {
   align-items: center;
   margin: 2px;
   perspective: 1000px;
-  transition: all .3s ease-out;
 }
 .tile .flipper {
 	position: relative;
