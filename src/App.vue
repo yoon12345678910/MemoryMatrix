@@ -193,7 +193,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
 }
 .title {
-  margin-bottom: 30px;
+  margin: 20px;
   font-size: 3rem;
   font-weight: 300;
   text-align: center;
@@ -293,12 +293,12 @@ export default {
   font-size: 20px;
   color: #feffff;
 }
-@media screen and (max-width: 400px) {
+@media screen and (max-width: 42  0px) {
   .title {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
   .vue-logo {
-    height: 37px;
+    height: 27px;
   }
 }
 </style>
