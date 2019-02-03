@@ -205,8 +205,8 @@ export default {
 }
 .container {
   margin: auto;
-  width: 500px;
-  height: 500px;
+  max-width: 500px;
+  max-height: 500px;
   background-color: #7a594e;
 }
 .info {
