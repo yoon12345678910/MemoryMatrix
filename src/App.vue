@@ -273,9 +273,6 @@ export default {
   transform: rotateX(0deg);
   background: #714a43;
 }
-.tile .front:hover {
-  background: #9e7063;
-}
 .tile .back {
   transform: rotateX(180deg);
 }
@@ -299,6 +296,11 @@ export default {
   }
   .vue-logo {
     height: 27px;
+  }
+}
+@media (hover:hover) {
+ .tile .front:hover {
+    background: #9e7063;
   }
 }
 </style>
