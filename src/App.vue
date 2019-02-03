@@ -293,4 +293,12 @@ export default {
   font-size: 20px;
   color: #feffff;
 }
+@media screen and (max-width: 400px) {
+  .title {
+    font-size: 2rem;
+  }
+  .vue-logo {
+    height: 37px;
+  }
+}
 </style>
