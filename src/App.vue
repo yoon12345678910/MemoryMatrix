@@ -293,7 +293,7 @@ export default {
   font-size: 20px;
   color: #feffff;
 }
-@media screen and (max-width: 42  0px) {
+@media screen and (max-width: 480px) {
   .title {
     font-size: 1.5rem;
   }
