@@ -11,6 +11,10 @@
       <button v-on:click="gameMode.load">Continue</button>
       <button v-on:click="gameMode.new">New</button>
     </div>
+    <div class="coverScreen complete"
+      :class="{show: state === 'COMPLETE', showFadeIn: state === 'COMPLETE' && showFadeIn}" >
+      <div class="desc">You have an excellent brain!</div>
+    </div>
   </div>
 </template>
 
@@ -24,7 +28,7 @@ export default {
     },
     showFadeIn: {
       type: Boolean,
-      default: 0
+      default: false
     },
     loadedGame: {
       type: Boolean,
@@ -32,7 +36,9 @@ export default {
     },
     gameMode: {
       type: Object,
-      default: {}
+      default: function () {
+        return {};
+      }
     }
   }
 }
@@ -63,7 +69,7 @@ export default {
   transform: translateY(0);
   opacity: 1;
 }
-.coverScreen.init .desc {
+.coverScreen .desc {
   margin-bottom: 30px;
   color: #fff;
   font-size: 165.5%;
@@ -91,5 +97,10 @@ export default {
 }
 .coverScreen button:hover {
   background-color: #F2744A;
+}
+@media screen and (max-width: 480px) {
+  .coverScreen.init .desc {
+    font-size: 135.5%;
+  }
 }
 </style>
