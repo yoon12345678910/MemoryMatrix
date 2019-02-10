@@ -74,8 +74,8 @@ export default {
 }
 .tile .flipper {
 	position: relative;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   transition: 0.5s;
 	transform-style: preserve-3d;
 }
@@ -113,7 +113,7 @@ export default {
   background: #51a729;
 }
 .tile .back svg {
-  padding: 10px;
+  padding: 8px;
   font-size: 20px;
   color: #feffff;
 }
