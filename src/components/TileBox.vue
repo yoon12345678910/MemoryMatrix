@@ -1,0 +1,125 @@
+<template>
+  <div id="tileBox" class="boxWrapper">
+    <div class="tileBox" :style="{width: boxSize, height: boxSize}" >
+      <div :key="tile.id"
+        class="tile flip-container"
+        v-on:click="checkTile(index)" 
+        v-for="(tile, index) in tiles">
+        <div class="flipper" :class="{isSelected: tile.isSelected}">
+          <div class="front"></div>
+          <div class="back">
+            <div v-if="didPass && tile.isLastClick" class="result endCorrect">
+              <font-awesome-icon icon="check" />
+            </div>
+            <div v-if="tile.isCorrect" class="result correct"></div>
+            <div v-if="!tile.isCorrect" class="result wrong">
+              <font-awesome-icon icon="times" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'tileBox',
+  props: {
+    boxSize: {
+      type: String,
+      default: '0'
+    },
+    tiles: {
+      type: Array,
+      default: function () {
+        return [];
+      }
+    },
+    didPass: {
+      type: Boolean,
+      default: false
+    },
+    checkTile: {
+      type: Function,
+      default: function () {}
+    }
+  }
+}
+</script>
+
+<style>
+.boxWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 476px;
+}
+.tileBox {
+  display: flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+  margin-top: -10px;
+  padding: 10px;
+  background: #3a2a25;
+  transition: all .2s ease-out;
+}
+.tile {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 2px;
+  perspective: 1000px;
+}
+.tile .flipper {
+	position: relative;
+  width: 40px;
+  height: 40px;
+  transition: 0.5s;
+	transform-style: preserve-3d;
+}
+.tile .flipper.isSelected {
+  transform: rotateX(180deg);
+}
+.tile .flipper .front, .tile .flipper .back {
+	position: absolute;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+	top: 0;
+	left: 0;
+  backface-visibility: hidden;
+}
+.tile .front {
+  z-index: 2;
+  transform: rotateX(0deg);
+  background: #714a43;
+}
+.tile .back {
+  transform: rotateX(180deg);
+}
+.tile .back .result {
+  width: 100%;
+  height: 100%;
+}
+.tile .back .result.correct {
+  background: #4eafb5;
+}
+.tile .back .result.wrong {
+  background: #ff7000;
+}
+.tile .back .result.endCorrect {
+  background: #51a729;
+}
+.tile .back svg {
+  padding: 10px;
+  font-size: 20px;
+  color: #feffff;
+}
+@media (hover:hover) {
+ .tile .front:hover {
+    background: #9e7063;
+  }
+}
+</style>

@@ -5,51 +5,40 @@
       <span> Memory Matrix</span>
     </h1>
     <div class="container">
-      <div class="info">
-        <div>
-          LEVEL<span>{{ level + 1 }}</span>
-        </div>
-        <div>
-          TILES<span>{{ correctTileCount }}</span>
-        </div>
-      </div>
-      <div class="boxWrapper">
-        <div class="tileBox" :style="{width: calcBoxSize, height: calcBoxSize}" >
-          <div :key="tile.id"
-            v-for="(tile, index) in tiles"
-            v-on:click="checkTile(index)" 
-            class="tile flip-container">
-            <div class="flipper" :class="{isSelected: tile.isSelected}">
-              <div class="front"></div>
-              <div class="back" :class="{
-                correct: tile.isCorrect,
-                wrong: !tile.isCorrect,
-                endCorrect: didPass && tile.isLastClick}">
-                <font-awesome-icon v-if="!tile.isCorrect" icon="times" />
-                <font-awesome-icon v-if="didPass && tile.isLastClick" icon="check" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <game-info 
+        :level="level" 
+        :correctTileCount="correctTileCount" 
+        :life="life" />
+      <tile-box
+        :boxSize="calcBoxSize"
+        :tiles="tiles"
+        :didPass="didPass"
+        :checkTile="checkTile" />
     </div>
   </div>
 </template>
 
 <script>
-import { gameRoundData } from './gameRoundData';
-import { DB } from './DB';
+import { gameRoundData } from './gameRoundData'
+import { DB } from './DB'
+import GameInfo from './components/GameInfo'
+import TileBox from './components/TileBox'
+
 export default {
   name: 'app',
+  components: {
+    GameInfo,
+    TileBox
+  },
   data() {
     return({
-      tiles: [],
       life: 5,
       level: 0,
       correctTileCount: 0,
       yourRightAnswerCount: 0,
       remainingClickCount: 0,
       levelIncPoint: 0,
+      tiles: [],
       didPass: false
     });
   },
@@ -209,98 +198,12 @@ export default {
   max-height: 500px;
   background-color: #7a594e;
 }
-.info {
-  text-align: right;
-}
-.info div {
-  display: inline-block;
-  position: relative;
-  padding: 2px 10px;
-  right: 3px;
-  font-size: 15px;
-  font-weight: bolder;
-  background: #f2f4f7;
-}
-.info div:last-child {
-  right: 0;
-}
-.info span {
-  margin-left: 10px;
-}
-.boxWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 476px;
-}
-.tileBox {
-  display: flex;
-  flex-wrap: wrap;
-  overflow: hidden;
-  margin-top: -10px;
-  padding: 10px;
-  background: #3a2a25;
-  transition: all .2s ease-out;
-}
-.tile {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  margin: 2px;
-  perspective: 1000px;
-}
-.tile .flipper {
-	position: relative;
-  width: 40px;
-  height: 40px;
-  transition: 0.5s;
-	transform-style: preserve-3d;
-}
-.tile .flipper.isSelected {
-  transform: rotateX(180deg);
-}
-.tile .flipper .front, .tile .flipper .back {
-	position: absolute;
-  width: 100%;
-  height: 100%;
-	top: 0;
-	left: 0;
-  backface-visibility: hidden;
-}
-.tile .front {
-  z-index: 2;
-  transform: rotateX(0deg);
-  background: #714a43;
-}
-.tile .back {
-  transform: rotateX(180deg);
-}
-.tile .back.correct {
-  background: #4eafb5;
-}
-.tile .back.wrong {
-  background: #ff7000;
-}
-.tile .back.endCorrect {
-  background: #51a729;
-}
-.tile .back svg {
-  padding: 10px;
-  font-size: 20px;
-  color: #feffff;
-}
 @media screen and (max-width: 480px) {
   .title {
     font-size: 1.5rem;
   }
   .vue-logo {
     height: 27px;
-  }
-}
-@media (hover:hover) {
- .tile .front:hover {
-    background: #9e7063;
   }
 }
 </style>
