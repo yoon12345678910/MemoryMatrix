@@ -59,6 +59,6 @@ export default {
   transition: opacity .5s ease;
 }
 .heart.broken {
-  opacity: 0.2;
+  opacity: 0;
 }
 </style>
