@@ -3,13 +3,14 @@
     <div class="coverScreen init"
       :class="{show: state === 'INIT', showFadeIn: state === 'INIT' && showFadeIn}">
       <div class="desc">Train your spatial recall by<br>remembering the pattern of tiles</div>
-      <button v-on:click="gameMode.new">New</button>
-      <button v-if="loadedGame" v-on:click="gameMode.load">Load</button>
+      <button v-on:click="gameMode.new">NEW</button>
+      <button v-if="loadedGame" v-on:click="gameMode.load">LOAD</button>
     </div>
     <div class="coverScreen end"
       :class="{show: state === 'END', showFadeIn: state === 'END' && showFadeIn}" >
-      <button v-on:click="gameMode.load">Continue</button>
-      <button v-on:click="gameMode.new">New</button>
+      <div class="desc">GAME OVER</div>
+      <button v-on:click="gameMode.load">CONTINUE</button>
+      <button v-on:click="gameMode.new">NEW</button>
     </div>
     <div class="coverScreen complete"
       :class="{show: state === 'COMPLETE', showFadeIn: state === 'COMPLETE' && showFadeIn}" >

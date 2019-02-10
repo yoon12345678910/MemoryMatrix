@@ -77,7 +77,7 @@ export default {
         new: async () => {
           await this.asyncToggleCoverScreen();
           DB.save({ level: -1 });
-          this.level = 32;
+          this.level = 0;
           this.life = 5;
           this.startRound();
         },
