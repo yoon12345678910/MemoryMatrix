@@ -68,7 +68,7 @@ export default {
   computed: {
     calcBoxSize: function () {
       const { nTile } = gameRoundData[this.level];
-      return `${44 * nTile}px`; // 44 = tile width ( width + margin 2 * 2 )
+      return `${40 * nTile}px`; // 44 = tile width ( width + margin 2 * 2 )
     }
   },
   methods: {
@@ -77,7 +77,7 @@ export default {
         new: async () => {
           await this.asyncToggleCoverScreen();
           DB.save({ level: -1 });
-          this.level = 0;
+          this.level = 32;
           this.life = 5;
           this.startRound();
         },
@@ -121,7 +121,11 @@ export default {
         this.life --;
       }
 
-      if (this.life > 0) { 
+      if (!gameRoundData[this.level]) {
+        this.state = 'COMPLETE';
+        await this.delay(500);
+        this.asyncToggleCoverScreen();
+      } else if (this.life > 0) { 
         this.startRound();
       } else {
         this.state = 'END';
@@ -236,7 +240,7 @@ export default {
   position: relative;
   overflow: hidden;
   margin: auto;
-  width: 500px;
+  max-width: 500px;
   height: 476px;
   background-color: #7a594e;
 }
