@@ -2,52 +2,68 @@
   <div id="app">
     <h1 class="title">
       <img class="vue-logo" src="https://vuejs.org/images/logo.png" />
-      <span> Memory Matrix</span>
+      <span>&nbsp;Memory Matrix</span>
     </h1>
     <div class="container">
-      <game-info 
+      <game-info
+        v-if="state !== 'INIT'"
         :level="level" 
         :correctTileCount="correctTileCount" 
         :life="life" />
       <tile-box
+        v-if="state === 'ONGOING'"
         :boxSize="calcBoxSize"
         :tiles="tiles"
         :didPass="didPass"
         :checkTile="checkTile" />
+      <cover-screen
+        :state="state"
+        :showFadeIn="coverScreenShowFadeIn"
+        :loadedGame="level !== -1"
+        :gameMode="gameMode()" />
     </div>
   </div>
 </template>
 
 <script>
-import { gameRoundData } from './gameRoundData'
 import { DB } from './DB'
+import { gameRoundData } from './gameRoundData'
+import CoverScreen from './components/CoverScreen'
 import GameInfo from './components/GameInfo'
 import TileBox from './components/TileBox'
 
 export default {
   name: 'app',
   components: {
+    CoverScreen,
     GameInfo,
     TileBox
   },
   data() {
     return({
-      life: 5,
-      level: 0,
+      state: 'INIT',
+      life: 0,
+      level: -1,
       correctTileCount: 0,
       yourRightAnswerCount: 0,
       remainingClickCount: 0,
       levelIncPoint: 0,
       tiles: [],
-      didPass: false
+      didPass: false,
+      coverScreenShowFadeIn: false
     });
   },
   created() {
     const loaded = DB.load();
-    this.level = loaded === null ? 0 : loaded.level;
+    if (loaded !== null) {
+      this.level =  loaded.level;
+    }
   },
   mounted() {
-    this.startRound();
+    this.delay(500)
+      .then(() => {
+        this.asyncToggleCoverScreen();
+      });
   },
   computed: {
     calcBoxSize: function () {
@@ -56,6 +72,23 @@ export default {
     }
   },
   methods: {
+    gameMode() {
+      return {
+        new: async () => {
+          await this.asyncToggleCoverScreen();
+          DB.save({ level: -1 });
+          this.level = 0;
+          this.life = 5;
+          this.startRound();
+        },
+        load: async () => {
+          await this.asyncToggleCoverScreen();
+          this.level = DB.load().level;
+          this.life = 5;
+          this.startRound();
+        }
+      }
+    },
     async startRound() {
       const {
         nTile,
@@ -63,6 +96,7 @@ export default {
         correctScreenTime
       } = gameRoundData[this.level];
 
+      this.state = 'ONGOING';
       this.tiles = this.generateTiles(nTile, correctTileCount);
       this.didPass = false;
       this.remainingClickCount = 0;
@@ -79,6 +113,7 @@ export default {
         return tile.isCorrect || tile.isSelected;
       }), 1500);
       await this.delay(500);
+      
       if (this.didPass) {
         this.level = this.adjustLevel().up();
       } else {
@@ -86,12 +121,13 @@ export default {
         this.life --;
       }
 
-      DB.save({ level: this.level });
-
-      if (this.life === 0) {
-        alert('game over');
-      } else {  
+      if (this.life > 0) { 
         this.startRound();
+      } else {
+        this.state = 'END';
+        DB.save({ level: this.level });
+        await this.delay(500);
+        this.asyncToggleCoverScreen();
       }
     },
     generateTiles(nTile, correctTileCount) {
@@ -169,6 +205,10 @@ export default {
           });
         });
     },
+    asyncToggleCoverScreen() {
+      this.coverScreenShowFadeIn = !this.coverScreenShowFadeIn;
+      return this.delay(500);
+    }
   }
 }
 </script>
@@ -193,9 +233,11 @@ export default {
   height: 55px;
 }
 .container {
+  position: relative;
+  overflow: hidden;
   margin: auto;
-  max-width: 500px;
-  max-height: 500px;
+  width: 500px;
+  height: 476px;
   background-color: #7a594e;
 }
 @media screen and (max-width: 480px) {
