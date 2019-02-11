@@ -68,7 +68,7 @@ export default {
   computed: {
     calcBoxSize: function () {
       const { nTile } = gameRoundData[this.level];
-      return `${40 * nTile}px`; // 44 = tile width ( width + margin 2 * 2 )
+      return `${40 * nTile}px`; // 40 = tile width ( width + margin 2 * 2 )
     }
   },
   methods: {
@@ -172,13 +172,12 @@ export default {
     adjustLevel() {
       return {
         up: () => {
-          if (this.levelIncPoint < 2) this.levelIncPoint ++;
-          return this.level + (this.levelIncPoint === 2 ? 2 : 1);
+          if (this.levelIncPoint < 3) this.levelIncPoint ++;
+          return this.level + (this.levelIncPoint === 3 ? 2 : 1);
         },
         down: () => {
-          if (this.levelIncPoint > -1) this.levelIncPoint --;
-          const level = this.level + (this.levelIncPoint === -1 ? -1 : 0);
-          return level < 0 ? 0 : level;
+          this.levelIncPoint = this.levelIncPoint > 0 ? 0 : -1;
+          return this.level > 0 ? this.level + this.levelIncPoint : 0;
         }
       }
     },
