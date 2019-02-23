@@ -1,5 +1,5 @@
 export const DB = (function () {
-  const LS_KEY = 'momory-matrix';
+  const LS_KEY = 'memory-matrix';
 
   return {
     save({ level }) {
