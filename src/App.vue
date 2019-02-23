@@ -1,14 +1,14 @@
 <template>
   <div id="app">
     <h1 class="title">
-      <img class="vue-logo" src="https://vuejs.org/images/logo.png" />
+      <img class="vue-logo" src="https://vuejs.org/images/logo.png" alt="" />
       <span>&nbsp;Memory Matrix</span>
     </h1>
     <div class="container">
       <game-info
         v-if="state !== 'INIT'"
-        :level="level" 
-        :correctTileCount="correctTileCount" 
+        :level="level"
+        :correctTileCount="correctTileCount"
         :life="life" />
       <tile-box
         v-if="state === 'ONGOING'"
@@ -39,20 +39,18 @@ export default {
     GameInfo,
     TileBox
   },
-  data() {
-    return({
-      state: 'INIT',
-      life: 0,
-      level: -1,
-      correctTileCount: 0,
-      yourRightAnswerCount: 0,
-      remainingClickCount: 0,
-      levelIncPoint: 0,
-      tiles: [],
-      didPass: false,
-      coverScreenShowFadeIn: false
-    });
-  },
+  data: () => ({
+    state: 'INIT',
+    life: 0,
+    level: -1,
+    correctTileCount: 0,
+    yourRightAnswerCount: 0,
+    remainingClickCount: 0,
+    levelIncPoint: 0,
+    tiles: [],
+    didPass: false,
+    coverScreenShowFadeIn: false
+  }),
   created() {
     const loaded = DB.load();
     if (loaded !== null) {
@@ -66,7 +64,7 @@ export default {
       });
   },
   computed: {
-    calcBoxSize: function () {
+    calcBoxSize () {
       const { nTile } = gameRoundData[this.level];
       return `${40 * nTile}px`; // 40 = tile width ( width + margin 2 * 2 )
     }
@@ -92,7 +90,7 @@ export default {
     async startRound() {
       const {
         nTile,
-        correctTileCount, 
+        correctTileCount,
         correctScreenTime
       } = gameRoundData[this.level];
 
@@ -103,29 +101,25 @@ export default {
       this.yourRightAnswerCount = 0;
       this.correctTileCount = correctTileCount;
 
-      await this.asyncShowTileScreen(this.tiles, (tile => {
-        return tile.isCorrect;
-      }), correctScreenTime);
+      await this.asyncShowTileScreen(this.tiles, tile => tile.isCorrect, correctScreenTime);
       this.remainingClickCount = correctTileCount;
     },
     async evaluateRound() {
-      await this.asyncShowTileScreen(this.tiles, (tile => {
-        return tile.isCorrect || tile.isSelected;
-      }), 1500);
+      await this.asyncShowTileScreen(this.tiles, tile => tile.isCorrect || tile.isSelected, 1500);
       await this.delay(500);
-      
+
       if (this.didPass) {
         this.level = this.adjustLevel().up();
       } else {
         this.level = this.adjustLevel().down();
-        this.life --;
+        this.life--;
       }
 
       if (!gameRoundData[this.level]) {
         this.state = 'COMPLETE';
         await this.delay(500);
         this.asyncToggleCoverScreen();
-      } else if (this.life > 0) { 
+      } else if (this.life > 0) {
         this.startRound();
       } else {
         this.state = 'END';
@@ -135,7 +129,7 @@ export default {
       }
     },
     generateTiles(nTile, correctTileCount) {
-      const tiles = [];
+      let tiles = [];
       for (let i = 0; i < Math.pow(nTile, 2); i++) {
         tiles.push({
           index: i,
@@ -145,7 +139,7 @@ export default {
         });
       }
       while(correctTileCount > 0) {
-        const tile = tiles[Math.floor(Math.random() * tiles.length)];
+        let tile = tiles[Math.floor(Math.random() * tiles.length)];
         if (!tile.isCorrect) {
           tile.isCorrect = true;
           correctTileCount --;
@@ -154,7 +148,7 @@ export default {
       return tiles;
     },
     checkTile(index) {
-      const tile = this.tiles[index];
+      let tile = this.tiles[index];
       if (tile.isSelected || this.remainingClickCount === 0) return;
 
       tile.isSelected = true;
@@ -171,18 +165,18 @@ export default {
     },
     adjustLevel() {
       return {
-        up: () => {
+        up () {
           if (this.levelIncPoint < 3) this.levelIncPoint ++;
           return this.level + (this.levelIncPoint === 3 ? 2 : 1);
         },
-        down: () => {
+        down () {
           this.levelIncPoint = this.levelIncPoint > 0 ? 0 : -1;
           return this.level > 0 ? this.level + this.levelIncPoint : 0;
         }
       }
     },
     delay(t, v) {
-      return new Promise(function(resolve) { 
+      return new Promise(function(resolve) {
         setTimeout(resolve.bind(null, v), t)
       });
     },
