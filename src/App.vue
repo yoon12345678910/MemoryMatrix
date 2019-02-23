@@ -72,14 +72,14 @@ export default {
   methods: {
     gameMode() {
       return {
-        async new () {
+        new: async () => {
           await this.asyncToggleCoverScreen();
           DB.save({ level: -1 });
           this.level = 0;
           this.life = 5;
           this.startRound();
         },
-        async load () {
+        load: async () => {
           await this.asyncToggleCoverScreen();
           this.level = DB.load().level;
           this.life = 5;
