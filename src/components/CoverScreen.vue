@@ -44,13 +44,13 @@ export default {
   },
   computed: {
     initClass () {
-      return { show: this.state === 'INIT', showFadeIn: this.state === 'INIT' && this.showFadeIn }
+      return { show: this.state === 'INIT', showFadeIn: this.showFadeIn }
     },
     endClass () {
-      return { show: this.state === 'END', showFadeIn: this.state === 'END' && this.showFadeIn }
+      return { show: this.state === 'END', showFadeIn: this.showFadeIn }
     },
     completeClass () {
-      return { show: this.state === 'COMPLETE', showFadeIn: this.state === 'COMPLETE' && this.showFadeIn }
+      return { show: this.state === 'COMPLETE', showFadeIn: this.showFadeIn }
     }
   }
 }

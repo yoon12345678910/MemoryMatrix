@@ -12,7 +12,6 @@
         :life="life" />
       <tile-box
         v-if="state === 'ONGOING'"
-        :boxSize="calcBoxSize"
         :tiles="tiles"
         :didPass="didPass"
         :checkTile="checkTile" />
@@ -63,12 +62,6 @@ export default {
         this.asyncToggleCoverScreen();
       });
   },
-  computed: {
-    calcBoxSize () {
-      const { nTile } = gameRoundData[this.level];
-      return `${40 * nTile}px`; // 40 = tile width ( width + margin 2 * 2 )
-    }
-  },
   methods: {
     gameMode() {
       return {
@@ -112,7 +105,7 @@ export default {
         this.level = this.adjustLevel().up();
       } else {
         this.level = this.adjustLevel().down();
-        this.life--;
+        this.life --;
       }
 
       if (!gameRoundData[this.level]) {
@@ -130,6 +123,7 @@ export default {
     },
     generateTiles(nTile, correctTileCount) {
       let tiles = [];
+      let tile = null;
       for (let i = 0; i < Math.pow(nTile, 2); i++) {
         tiles.push({
           index: i,
@@ -139,7 +133,7 @@ export default {
         });
       }
       while(correctTileCount > 0) {
-        let tile = tiles[Math.floor(Math.random() * tiles.length)];
+        tile = tiles[Math.floor(Math.random() * tiles.length)];
         if (!tile.isCorrect) {
           tile.isCorrect = true;
           correctTileCount --;

@@ -1,6 +1,7 @@
 <template>
   <div id="tileBox" class="boxWrapper">
-    <div class="tileBox" :style="{width: boxSize, height: boxSize}" >
+    <div class="tileBox"
+        :style="tileBoxClass">
       <div :key="tile.id"
         class="tile flip-container"
         v-on:click="checkTile(index)" 
@@ -26,10 +27,6 @@
 export default {
   name: 'tileBox',
   props: {
-    boxSize: {
-      type: String,
-      default: '0'
-    },
     tiles: {
       type: Array,
       default: function () {
@@ -43,6 +40,13 @@ export default {
     checkTile: {
       type: Function,
       default: function () {}
+    }
+  },
+  computed: {
+    tileBoxClass () {
+      const nTile = Math.sqrt(this.tiles.length);
+      const boxSize = `${40 * nTile}px`; // 40 = tile width ( width + margin 2 * 2 )
+      return { width: boxSize, height: boxSize };
     }
   }
 }
