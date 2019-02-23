@@ -159,11 +159,11 @@ export default {
     },
     adjustLevel() {
       return {
-        up () {
+        up: () => {
           if (this.levelIncPoint < 3) this.levelIncPoint ++;
           return this.level + (this.levelIncPoint === 3 ? 2 : 1);
         },
-        down () {
+        down: () => {
           this.levelIncPoint = this.levelIncPoint > 0 ? 0 : -1;
           return this.level > 0 ? this.level + this.levelIncPoint : 0;
         }
