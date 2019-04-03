@@ -1,5 +1,5 @@
 <template>
-  <div id="gameInfo" class="gameInfo">
+  <div id="gameInfo" class="gameInfo" v-if="started">
     <div class="section">
       <span :key="index" v-for="index in 5" class="heart" :class="{broken: index <= 5 - life}" >
         <font-awesome-icon v-if="index > 5 - life" icon="heart" />
@@ -16,22 +16,21 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'gameInfo',
-  props: {
-    level: {
-      type: Number,
-      default: 0
-    },
-    correctTileCount: {
-      type: Number,
-      default: 0
-    },
-    life: {
-      type: Number,
-      default: 0
+  computed: {
+    ...mapState([
+      'status',
+      'level',
+      'life',
+      'correctTileCount'
+    ]),
+    started () {
+      return this.status !== 'INIT'; 
     }
-  }
+  },
 }
 </script>
 

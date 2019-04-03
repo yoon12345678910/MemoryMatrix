@@ -3,14 +3,14 @@
     <div class="coverScreen init"
          :class="initClass">
       <div class="desc">Train your spatial recall by<br>remembering the pattern of tiles</div>
-      <button @click="gameMode.new">NEW</button>
-      <button v-if="loadedGame" @click="gameMode.load">LOAD</button>
+      <button @click="newGame">NEW</button>
+      <button v-if="loadedGame" @click="loadGame">LOAD</button>
     </div>
-    <div class="coverScreen end"
-         :class="endClass">
+    <div class="coverScreen fail"
+         :class="failClass">
       <div class="desc">GAME OVER</div>
-      <button @click="gameMode.load">CONTINUE</button>
-      <button @click="gameMode.new">NEW</button>
+      <button @click="loadGame">CONTINUE</button>
+      <button @click="newGame">NEW</button>
     </div>
     <div class="coverScreen complete"
          :class="completeClass">
@@ -20,39 +20,54 @@
 </template>
 
 <script>
+import { mapState, mapMutations } from 'vuex'
+import helper from '../common/helper'
+
 export default {
   name: 'coverScreen',
-  props: {
-    state: {
-      type: String,
-      default: 'INIT'
-    },
-    showFadeIn: {
-      type: Boolean,
-      default: false
-    },
-    loadedGame: {
-      type: Boolean,
-      default: false
-    },
-    gameMode: {
-      type: Object,
-      default: function () {
-        return {}
-      }
-    }
+  created() {
+    this.setGameMode('INIT');
+  },
+  async mounted() {
+    await helper.delay(500);
+    this.showCoverScreen();
   },
   computed: {
+    ...mapState([
+      'status',
+      'level',
+      'isShowCoverScreen'
+    ]),
     initClass () {
-      return { show: this.state === 'INIT', showFadeIn: this.showFadeIn }
+      return { show: this.status === 'INIT', showFadeIn: this.isShowCoverScreen };
     },
-    endClass () {
-      return { show: this.state === 'END', showFadeIn: this.showFadeIn }
+    failClass () {
+      return { show: this.status === 'FAIL', showFadeIn: this.isShowCoverScreen };
     },
     completeClass () {
-      return { show: this.state === 'COMPLETE', showFadeIn: this.showFadeIn }
+      return { show: this.status === 'COMPLETE', showFadeIn: this.isShowCoverScreen };
+    },
+    loadedGame () {
+      return this.level !== -1;
     }
-  }
+  },
+  methods: {
+    ...mapMutations([
+      'setGameMode',
+      'showCoverScreen',
+      'hideCoverScreen'
+    ]),
+    async newGame() {
+      this.hideCoverScreen();
+      await helper.delay(500);
+      this.setGameMode('NEW');
+    },
+    async loadGame() {
+      this.hideCoverScreen();
+      await helper.delay(500);
+      this.setGameMode('LOAD');
+    },
+  } 
 }
 </script>
 
