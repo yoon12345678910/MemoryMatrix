@@ -24,8 +24,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex'
-import { gameRoundData } from '../gameRoundData'
+import { mapState, mapMutations, mapGetters } from 'vuex'
 import helper from '../common/helper'
 
 export default {
@@ -36,7 +35,8 @@ export default {
       'life',
       'level',
       'tiles',
-      'didPass'
+      'didPass',
+      'correctScreenTime'
     ]),
     progress () {
       return this.status === 'READY' || this.status === 'INGAME' || this.status === 'EVALUATION'; 
@@ -57,6 +57,9 @@ export default {
     }
   },
   methods: {
+    ...mapGetters([
+      'isCompletedGame'
+    ]),
     ...mapMutations([
       'initRoundData',
       'permitRemainingClickCount',
@@ -70,9 +73,8 @@ export default {
       'showCoverScreen'
     ]),
     async startRound () {
-      const { correctScreenTime } = gameRoundData[this.level];
       this.initRoundData();
-      await this.asyncShowTileScreen(tile => tile.isCorrect, correctScreenTime);
+      await this.asyncShowTileScreen(tile => tile.isCorrect, this.correctScreenTime);
       this.permitRemainingClickCount();
     },
     async evaluateRound () {
@@ -85,7 +87,7 @@ export default {
         this.levelDown();
       }
 
-      if (!gameRoundData[this.level]) {
+      if (this.isCompletedGame()) {
         this.completeGame();
         await helper.delay(1000);
         this.showCoverScreen();

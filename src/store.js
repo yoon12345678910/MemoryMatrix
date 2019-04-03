@@ -31,6 +31,7 @@ export const store = new Vuex.Store({
     status: 'INIT',
     life: 0,
     level: -1,
+    correctScreenTime: 0,
     correctTileCount: 0,
     yourRightAnswerCount: 0,
     remainingClickCount: 0,
@@ -38,6 +39,11 @@ export const store = new Vuex.Store({
     tiles: [],
     didPass: false,
     isShowCoverScreen: false,
+  },
+  getters: {
+    isCompletedGame: function (state) {
+      return !gameRoundData[state.level];
+    }
   },
   mutations: {
     setGameMode: function (state, payload) {
@@ -60,7 +66,8 @@ export const store = new Vuex.Store({
     initRoundData: function (state) {
       const {
         nTile,
-        correctTileCount
+        correctTileCount,
+        correctScreenTime
       } = gameRoundData[state.level];
 
       state.status = 'INGAME';
@@ -68,6 +75,7 @@ export const store = new Vuex.Store({
       state.didPass = false;
       state.remainingClickCount = 0;
       state.yourRightAnswerCount = 0;
+      state.correctScreenTime = correctScreenTime;
       state.correctTileCount = correctTileCount;
     },
     permitRemainingClickCount: function (state) {
