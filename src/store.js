@@ -41,7 +41,7 @@ export const store = new Vuex.Store({
     isShowCoverScreen: false,
   },
   getters: {
-    isCompletedGame: function (state) {
+    isEndGame: function (state) {
       return !gameRoundData[state.level];
     }
   },

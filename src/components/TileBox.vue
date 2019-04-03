@@ -58,7 +58,7 @@ export default {
   },
   methods: {
     ...mapGetters([
-      'isCompletedGame'
+      'isEndGame'
     ]),
     ...mapMutations([
       'initRoundData',
@@ -87,7 +87,7 @@ export default {
         this.levelDown();
       }
 
-      if (this.isCompletedGame()) {
+      if (this.isEndGame()) {
         this.completeGame();
         await helper.delay(1000);
         this.showCoverScreen();
