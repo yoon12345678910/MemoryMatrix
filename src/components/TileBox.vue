@@ -1,7 +1,7 @@
 <template>
-  <div id="tileBox" class="boxWrapper">
+  <div id="tileBox" class="boxWrapper" v-if="progress">
     <div class="tileBox"
-        :style="tileBoxClass">
+      :style="tileBoxClass">
       <div :key="tile.id"
         class="tile flip-container"
         v-on:click="checkTile(index)" 
@@ -24,29 +24,86 @@
 </template>
 
 <script>
+import { mapState, mapMutations, mapGetters } from 'vuex'
+import helper from '../common/helper'
+
 export default {
   name: 'tileBox',
-  props: {
-    tiles: {
-      type: Array,
-      default: function () {
-        return [];
-      }
-    },
-    didPass: {
-      type: Boolean,
-      default: false
-    },
-    checkTile: {
-      type: Function,
-      default: function () {}
-    }
-  },
   computed: {
+    ...mapState([
+      'status',
+      'life',
+      'level',
+      'tiles',
+      'didPass',
+      'correctScreenTime'
+    ]),
+    progress () {
+      return this.status === 'READY' || this.status === 'INGAME' || this.status === 'EVALUATION'; 
+    },
     tileBoxClass () {
       const nTile = Math.sqrt(this.tiles.length);
       const boxSize = `${40 * nTile}px`; // 40 = tile width ( width + margin 2 * 2 )
       return { width: boxSize, height: boxSize };
+    }
+  },
+  watch: {
+    status() {
+      if (this.status === 'READY') {
+        this.startRound();
+      } else if (this.status === 'EVALUATION') {
+        this.evaluateRound();
+      }
+    }
+  },
+  methods: {
+    ...mapGetters([
+      'isEndGame'
+    ]),
+    ...mapMutations([
+      'initRoundData',
+      'permitRemainingClickCount',
+      'failGame',
+      'completeGame',
+      'showWhichTiles',
+      'hideAllTiles',
+      'checkTile',
+      'levelUp',
+      'levelDown',
+      'showCoverScreen'
+    ]),
+    async startRound () {
+      this.initRoundData();
+      await this.asyncShowTileScreen(tile => tile.isCorrect, this.correctScreenTime);
+      this.permitRemainingClickCount();
+    },
+    async evaluateRound () {
+      await this.asyncShowTileScreen(tile => tile.isCorrect || tile.isSelected, 1500);
+      await helper.delay(500);
+
+      if (this.didPass) {
+        this.levelUp();
+      } else {
+        this.levelDown();
+      }
+
+      if (this.isEndGame()) {
+        this.completeGame();
+        await helper.delay(1000);
+        this.showCoverScreen();
+      } else if (this.life > 0) {
+        this.startRound();
+      } else {
+        this.failGame();
+        await helper.delay(1000);
+        this.showCoverScreen();
+      }
+    },
+    async asyncShowTileScreen(whichTile, timeTohidden) {
+      await helper.delay(500);
+      this.showWhichTiles(whichTile);
+      await helper.delay(timeTohidden);
+      this.hideAllTiles();
     }
   }
 }
